@@ -14,4 +14,11 @@ Codebook.md
 run_analysis.R
 
 The data can be downloaded from https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
+The zip file is also included in the repo.
+
+Transformations
 Running run_analysis.R will create the tidy_data.txt
+The one transformation that occured was grouping the data by subject and activity so that
+the mean of the mean and mean of the standard deviation could be calculated.
+All other efforts were to properly merge and bind the data and then to change column names
+to be readable.

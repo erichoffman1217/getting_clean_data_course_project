@@ -5,8 +5,7 @@ download.file(URL, Destination)
 
 library(data.table)
 library(dplyr)
-directory <- 'C:/Users/ehoff_000/Documents/GitHub/getting_clean_data_course_project/UCI HAR Dataset'
-directory <- 'UCI HAR Dataset'
+directory <- 'C:/Users/ehoff_000/Documents/GitHub/UCI HAR Dataset'
 
 
 activity_labels <- fread(paste0(directory,'/activity_labels.txt'))
@@ -31,11 +30,11 @@ final <- as.data.frame(rbind(cbind(sub_test,val_test,act_test),
 rm(sub_test,val_test,act_test,sub_train, val_train, act_train)
 
 # Insert and remove columns names
+features<- as.data.frame(features)
 colnames(final) <- c('subject', features[,2], 'activity')
 select_columns <- grepl("subject|.*mean\\(.*|.*std.*|activity", colnames(final))
 table(select_columns)
 final <- final[,select_columns]
-
 
 #Rename Column names
 renaming_final<- colnames(final)
@@ -49,6 +48,7 @@ renaming_final <- gsub("Freq", "Frequency", renaming_final)
 renaming_final <- gsub("mean", "Mean", renaming_final)
 renaming_final <- gsub("std", "StandardDeviation", renaming_final)
 renaming_final <- gsub("BodyBody", "Body", renaming_final)
+renaming_final <- gsub("\\(\\)", "", renaming_final)
 renaming_final
 colnames(final) <- renaming_final
 
