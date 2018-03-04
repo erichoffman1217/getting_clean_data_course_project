@@ -5,20 +5,104 @@ download.file(URL, Destination)
 
 library(data.table)
 library(dplyr)
-
 directory <- 'C:/Users/ehoff_000/Documents/GitHub/getting_clean_data_course_project/UCI HAR Dataset'
+directory <- 'UCI HAR Dataset'
+
+#Load in Data
+trainSubjects <- read.table(file.path(directory, "train", "subject_train.txt"))
+trainValues <- read.table(file.path(directory, "train", "X_train.txt"))
+trainActivity <- read.table(file.path(directory, "train", "y_train.txt"))
+
+# read test data
+testSubjects <- read.table(file.path(directory, "test", "subject_test.txt"))
+testValues <- read.table(file.path(directory, "test", "X_test.txt"))
+testActivity <- read.table(file.path(directory, "test", "y_test.txt"))
+
+features <- read.table(file.path(directory, "features.txt"), as.is = TRUE)
+activities <- read.table(file.path(directory, "activity_labels.txt"))
+colnames(activities) <- c("activityId", "activityLabel")
+
+
+
+humanActivity <- rbind(
+      cbind(trainSubjects, trainValues, trainActivity),
+      cbind(testSubjects, testValues, testActivity)
+)
+
+# remove individual data tables to save memory
+rm(trainSubjects, trainValues, trainActivity, 
+   testSubjects, testValues, testActivity)
+
+# assign column names
+colnames(humanActivity) <- c("subject", features[, 2], "activity")
+columnsToKeep <- grepl("subject|activity|mean|std", colnames(humanActivity))
+humanActivity <- humanActivity[, columnsToKeep]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 activity_labels <- fread(paste0(directory,'/activity_labels.txt'))
-features <- read.table(paste0(directory,'/features.txt'))
+colnames(activity_labels) <- c("actId", "actLabel")
+
 features <- fread(paste0(directory,'/features.txt'))
-x_test <- fread(paste0(directory,'/test/X_test.txt'))
-x_train <- fread(paste0(directory,'/train/X_train.txt'))
 
-#Merge and bind colnames
-features[,2] <- unclass(as.character(features[,2]))
-colnames(x_test) <- unclass(as.character(features[,2]))
+val_test <- fread(paste0(directory,'/test/X_test.txt'))
+act_test <- fread(paste0(directory,'/test/Y_test.txt'))
+sub_test <- fread(paste0(directory,'/test/subject_test.txt'))
+
+val_train <- fread(paste0(directory,'/train/X_train.txt'))
+act_train <- fread(paste0(directory,'/train/Y_train.txt'))
+sub_train <- fread(paste0(directory,'/train/subject_train.txt'))
 
 
-unclass(as.character(features[,2]))
-# Grab mean and stddv from featuers then train and test
-select_features <-features[V2 %like% ".*mean.*|.*std.*"]
+
+#Merge and bind data together
+final <- as.data.frame(rbind(cbind(sub_test,val_test,act_test), 
+               cbind(sub_train, val_train, act_train)))
+
+rm(sub_test,val_test,act_test,sub_train, val_train, act_train)
+
+# Insert and remove columns names
+colnames(final) <- c('subject', features[,2], 'activity')
+select_columns <- grepl("subject|.*mean\\(.*|.*std.*|activity", colnames(final))
+table(select_columns)
+final <- final[,select_columns]
+
+
+#Rename Column names
+renaming_final<- colnames(final)
+renaming_final
+renaming_final <- gsub("^f", "frequencyDomain", renaming_final)
+renaming_final <- gsub("^t", "timeDomain", renaming_final)
+renaming_final <- gsub("Acc", "Accelerometer", renaming_final)
+renaming_final <- gsub("Gyro", "Gyroscope", renaming_final)
+renaming_final <- gsub("Mag", "Magnitude", renaming_final)
+renaming_final <- gsub("Freq", "Frequency", renaming_final)
+renaming_final <- gsub("mean", "Mean", renaming_final)
+renaming_final <- gsub("std", "StandardDeviation", renaming_final)
+renaming_final <- gsub("BodyBody", "Body", renaming_final)
+renaming_final
+colnames(final) <- renaming_final
+
+
+#Create means on subject and activity
+activity_means <- final %>% 
+      group_by(subject, activity) %>%
+      summarise_all(funs(mean))
+
+#Create Tidy Dataset
+write.table(activity_means, "tidy_data.txt", quote = FALSE)
 
