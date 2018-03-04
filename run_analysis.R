@@ -59,5 +59,5 @@ activity_means <- final %>%
       summarise_all(funs(mean))
 
 #Create Tidy Dataset
-write.table(activity_means, "tidy_data.txt", quote = FALSE)
+write.table(activity_means, "tidy_data.txt", quote = FALSE, row.names = FALSE)
 
