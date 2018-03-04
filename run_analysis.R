@@ -58,6 +58,7 @@ activity_means <- final %>%
       group_by(subject, activity) %>%
       summarise_all(funs(mean))
 
-#Create Tidy Dataset
+#Create Tidy Dataset, do not include row_names
+
 write.table(activity_means, "tidy_data.txt", quote = FALSE, row.names = FALSE)
 
